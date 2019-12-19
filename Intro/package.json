@@ -1,0 +1,16 @@
+{
+  "name": "treejs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "parcel index.html"
+  },
+  "dependencies": {
+    "parcel": "^1.12.4",
+    "three": "^0.111.0"
+  },
+  "devDependencies": {
+    "typescript": "^3.7.3"
+  }
+}
