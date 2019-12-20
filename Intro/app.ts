@@ -5,7 +5,6 @@ import {
   BoxGeometry,
   MeshBasicMaterial,
   Mesh,
-  TextureLoader
 } from "three";
 
 let scene: Scene,
@@ -33,7 +32,7 @@ let scene: Scene,
   const geometry = new BoxGeometry(2, 2, 2);
 
   // const texture = new TextureLoader().load("/texture.jpg");
-  // const material = new MeshBasicMaterial({ map: texture });
+ // const material = new MeshBasicMaterial({ map: texture });
 
   const material = new MeshBasicMaterial({ color: 0x0000ff });
 
