@@ -1,148 +1,112 @@
-"use strict";
 export {};
+
+const { PI, random } = Math;
+
+const COLORS = ["#027373", "#014040", "#038C7F", "#038C65"];
+const GRAVITY = 0.9;
+const BOUNCINESS = 0.9;
 
 const canvas = document.querySelector("canvas");
 
 function resize() {
-  console.log("re");
   canvas.width = innerWidth;
   canvas.height = innerHeight;
-  init();
 }
-
-window.addEventListener("resize", resize);
+resize();
 
 const c = canvas.getContext("2d");
-c.strokeStyle = "green";
 
-const colors = ["#027373", "#014040", "#038C7F", "#038C65"];
-
-const mouse = {
-  x: NaN,
-  y: NaN,
-};
-
-document.addEventListener("mousemove", ev => {
-  (mouse.x = ev.x), (mouse.y = ev.y);
-});
-
-interface CircleProps {
+interface BallProps {
   x: number;
   y: number;
   radius: number;
   dx: number;
   dy: number;
-  resizingDimension?: number;
-  resizingVelocity?: number;
-  color?: string;
+  strokeColor: string;
+  fillColor: string;
 }
 
-class Circle {
-  private dim: CircleProps;
-  private resizingDimension: number;
-  private resizingVelocity: number;
-  private baseRadius: number;
-  private color: string;
-
-  constructor({
-    resizingDimension,
-    resizingVelocity,
-    color,
-    ...props
-  }: CircleProps) {
-    this.dim = props;
-    this.resizingDimension =
-      typeof resizingDimension === "number" ? resizingDimension : 50;
-
-    this.resizingVelocity =
-      typeof resizingVelocity === "number" ? resizingVelocity : 2;
-
-    this.baseRadius = props.radius;
-
-    this.color = color
-      ? color
-      : colors[Math.floor(Math.random() * colors.length)];
-  }
+class Ball {
+  constructor(private props: BallProps) {}
 
   public draw = () => {
     const {
-      dim: { x, y, radius },
-      color,
+      props: { x, y, radius, strokeColor, fillColor },
     } = this;
 
     c.beginPath();
-    c.arc(x, y, radius, 0, 2 * Math.PI, false);
-    c.stroke();
-    c.fillStyle = color;
-    c.fill();
+    c.arc(x, y, radius, 0, 2 * PI, false);
+
+    (c.strokeStyle = strokeColor), (c.fillStyle = fillColor);
+
+    c.stroke(), c.fill();
+    c.closePath();
   };
 
-  public update() {
+  public update(): void {
     const {
-      dim: { x, y, radius, dx, dy },
       draw: drawCircle,
-      resizingDimension,
-      resizingVelocity,
-      baseRadius,
+      props: { x, y, dx, dy, radius },
     } = this;
 
-    // Circle movement
+    // Y
+    if (y + radius >= innerHeight) {
+      // Inverse the acceleration whenever ball hit the ground and decrease it by subtracting to BOUNCINESS
+      this.props.dy = -dy * BOUNCINESS;
+    } else {
+      // Constantly add GRAVITY to acceleration it
+      this.props.dy += GRAVITY;
+    }
+
+    // X
     if (x + radius >= innerWidth || x - radius <= 0) {
-      this.dim.dx = -dx;
-    }
-    if (y + radius >= innerHeight || y - radius <= 0) {
-      this.dim.dy = -dy;
+      this.props.dx = -dx * BOUNCINESS;
     }
 
-    this.dim.x += this.dim.dx;
-    this.dim.y += this.dim.dy;
-
-    // Circle resizing
-    if (
-      x - mouse.x <= resizingDimension &&
-      mouse.x - x <= resizingDimension &&
-      y - mouse.y <= resizingDimension &&
-      mouse.y - y <= resizingDimension
-    ) {
-      if (!(radius >= this.baseRadius * 3)) {
-        this.dim.radius += resizingVelocity;
-      }
-    } else if (this.dim.radius >= baseRadius) {
-      this.dim.radius -= resizingVelocity;
-    }
+    this.props.y += this.props.dy;
+    this.props.x += this.props.dx;
 
     drawCircle();
   }
 }
 
-function randomCirclePropsGenerator(): CircleProps {
-  const { random } = Math;
+addEventListener("resize", resize);
 
-  const radius = random() * 10 * 3 + 10;
+const balls = Array.from({ length: 100 }).map(() => {
+  const radius = radomIntBetween(10, 20);
 
-  return {
-    dx: random() - 0.5,
-    dy: random() - 0.5,
+  return new Ball({
     radius,
-    x: random() * (innerWidth - radius * 2) + radius,
-    y: random() * (innerHeight - radius * 2) + radius,
-  };
-}
+    x: radomIntBetween(radius, innerWidth - radius),
+    y: radomIntBetween(radius, window.innerHeight - radius),
+    dx: radomIntBetween(1, 4),
+    dy: radomIntBetween(5, 7),
+    strokeColor: randomFromArray(COLORS),
+    fillColor: randomFromArray(COLORS),
+  });
+});
 
-let circles: Circle[] = [];
-
-function init() {
-  circles = [];
-  circles = Array.from({ length: 100 }).map(
-    () => new Circle(randomCirclePropsGenerator()),
-  );
-}
-
-function animate() {
+(function animate() {
   c.clearRect(0, 0, innerWidth, innerHeight);
-  circles.forEach(cr => cr.update());
+
+  balls.forEach(b => b.update());
+
   requestAnimationFrame(animate);
+})();
+
+/**
+ * Retrieve a random number in specified sequence
+ * @param min Left hand
+ * @param max Right hand
+ */
+function radomIntBetween(min: number, max: number): number {
+  return Math.floor(random() * (max - min + 1)) + min;
 }
 
-init();
-animate();
+/**
+ * Retrieve a random element from specified list
+ * @param array List to pick a random element from
+ */
+function randomFromArray(array: string[]) {
+  return COLORS[radomIntBetween(0, array.length - 1)];
+}
