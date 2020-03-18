@@ -8,6 +8,7 @@
     "three": "^0.111.0"
   },
   "devDependencies": {
+    "sass": "^1.26.3",
     "typescript": "^3.7.3"
   }
 }
