@@ -1,7 +1,7 @@
 "use strict";
-import { canvas, c, GROUND_THICKNESS } from "./global";
+import { canvas, c, ground, GROUND_THICKNESS } from "./global";
 import { Rect, Arc } from "./shape";
-import { colors } from "./utils";
+import { colors, withGravity } from "./utils";
 
 addEventListener("resize", resizeCanvas);
 
@@ -11,38 +11,45 @@ function resizeCanvas() {
 }
 
 function init() {
-  resizeCanvas();
+  ground.update();
 
-  // Ground
-  new Rect({
-    x: 0,
-    y: innerHeight - GROUND_THICKNESS,
-    w: innerWidth,
-    h: GROUND_THICKNESS,
-    strokeStyle: colors[1],
-    velocity: { x: NaN, y: NaN },
-    mass: NaN,
-    fillStyle: colors[0],
-  });
+  resizeCanvas();
 }
 
-function animate() {
-  c.clearRect(0, 0, innerWidth, innerHeight - GROUND_THICKNESS);
-
-  const player = new Arc({
+const player = new Arc({
+  drawingProps: {
     x: 150,
-    y: 550,
+    y: innerHeight - 250,
     radius: 15,
+  },
+  velocity: { x: 0, y: 0 },
+  mass: 25,
+  strokeStyle: colors[4],
+  fillStyle: colors[4],
+});
+
+const block = withGravity(
+  new Rect({
+    drawingProps: {
+      x: innerWidth - 150,
+      y: innerHeight - 350,
+      w: 45,
+      h: 45,
+    },
     velocity: { x: 0, y: 0 },
     mass: 25,
     strokeStyle: colors[4],
     fillStyle: colors[4],
-  });
+  }),
+  1.1,
+);
 
-  // Design rigid bodies
-  player.update(props => {
-    props.x += 1;
-  });
+function animate() {
+  c.clearRect(0, 0, innerWidth, innerHeight - GROUND_THICKNESS);
+
+  player.update();
+
+  block.update();
 
   requestAnimationFrame(animate);
 }
